@@ -14,13 +14,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getLatestData = exports.createData = void 0;
 const userModels_1 = __importDefault(require("../models/userModels"));
+// import { Server } from 'socket.io';
+// Post api
 const createData = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { value, label } = req.body;
+        // Check if value and label fields are provided
+        if (!value || !label) {
+            return res.status(400).json({ error: 'Both value and label fields are required.' });
+        }
+        // Check if value and label already exist in the database
+        const existingData = yield userModels_1.default.findOne({ value, label });
+        if (existingData) {
+            return res.status(409).json({ error: 'Data with the same value and label already exists.' });
+        }
         const newData = new userModels_1.default({ value, label });
         yield newData.save();
-        const io = req.app.get('io');
-        io.emit('newData', newData);
         res.status(201).json(newData);
     }
     catch (err) {
@@ -29,6 +38,7 @@ const createData = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.createData = createData;
+// get api
 const getLatestData = (_, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const data = yield userModels_1.default.find().sort('-timestamp').limit(10);
