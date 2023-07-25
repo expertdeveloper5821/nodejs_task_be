@@ -22,6 +22,10 @@ app.use(express.json());
 app.use('/v1', dataRoute);
 
 
+app.get('/', (req, res) => {
+  res.send("Welcome")
+})
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
